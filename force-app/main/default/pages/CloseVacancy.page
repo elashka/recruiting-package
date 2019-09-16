@@ -1,0 +1,22 @@
+<apex:page standardController="Vacancy__c" extensions="CloseVacancyController" lightningStylesheets="true" sideBar="false" showHeader="false">
+    <apex:form >
+        <apex:pageBlock title="Candidates">
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:variable value="{!'In-Process'}" var="status"/>
+            <apex:pageBlockSection rendered="{!Vacancy__c.Status__c!=status}">
+                <apex:outputText value="You can't close vacancy with not In-Progress status."></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!candidates.size == 0 && Vacancy__c.Status__c==status}">
+                <apex:outputText value="You can't close vacancy without candidate. The vacancy will be canceled."></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!candidates.size > 0 && Vacancy__c.Status__c=status}">
+                <apex:selectRadio value="{!candidate}" layout="pageDirection">
+                    <apex:selectOptions value="{!candidates}"/>
+                </apex:selectRadio>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons rendered="{!Vacancy__c.Status__c==status}">
+                <apex:commandButton value="Close Vacancy" action="{!closeVacancy}"></apex:commandButton>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
