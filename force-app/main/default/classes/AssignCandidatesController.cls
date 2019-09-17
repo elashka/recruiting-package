@@ -1,6 +1,9 @@
 public with sharing class AssignCandidatesController {
     private final Vacancy__c vacancy;
-    public String[] selectedCandidates { get; set; }
+    public String[] selectedCandidates { get; set; } {
+        selectedCandidates = new String[]{
+        };
+    }
 
     public AssignCandidatesController(ApexPages.StandardController standardController) {
         this.vacancy = (Vacancy__c) standardController.getRecord();
