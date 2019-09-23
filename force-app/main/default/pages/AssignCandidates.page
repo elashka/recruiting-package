@@ -1,14 +1,15 @@
-<apex:page standardController="Vacancy__c" extensions="AssignCandidatesController" lightningStylesheets="true" sideBar="false" showHeader="false">
-    <apex:form >
+<apex:page standardController="Vacancy__c" extensions="AssignCandidatesController" lightningStylesheets="true"
+           sideBar="false" showHeader="false">
+    <apex:form>
         <apex:pageBlock title="Candidates">
-            <apex:variable value="{!'In-Process'}" var="status"/>
-            <apex:pageBlockSection rendered="{!Vacancy__c.Status__c!=status}">
-                <apex:outputText value="You can't assign candidates to vacancy with not In-Progress status."></apex:outputText>
+            <apex:variable value="{!inProgressStatus}" var="status"/>
+            <apex:pageBlockSection rendered="{!Vacancy__c.Status__c != status}">
+                <apex:outputText value="{!cantAssignText}"></apex:outputText>
             </apex:pageBlockSection>
             <apex:pageBlockSection rendered="{!candidates.size == 0}">
-                <apex:outputText value="There aren't candidates with status Validated by HR"></apex:outputText>
+                <apex:outputText value="{!noCandidatesText}"></apex:outputText>
             </apex:pageBlockSection>
-            <apex:pageBlockSection rendered="{!candidates.size > 0  && Vacancy__c.Status__c==status}">
+            <apex:pageBlockSection rendered="{!AND(candidates.size > 0, Vacancy__c.Status__c == status)}">
                 <apex:selectCheckboxes value="{!selectedCandidates}" layout="pageDirection">
                     <apex:selectOptions value="{!candidates}"/>
                 </apex:selectCheckboxes>

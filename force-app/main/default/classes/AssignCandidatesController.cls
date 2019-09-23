@@ -1,22 +1,36 @@
 public with sharing class AssignCandidatesController {
-    private final Vacancy__c vacancy;
-    public String[] selectedCandidates { get; set; } {
-        selectedCandidates = new String[]{
-        };
+    private Vacancy__c vacancy;
+    public String[] selectedCandidates { get; set; }
+    public String inProgressStatus {
+        get {
+            return RecruitingAppConstants.INPROGRESS_STATUS;
+        }
+    }
+    public String cantAssignText {
+        get {
+            return RecruitingAppConstants.CANT_ASSIGN_TEXT;
+        }
+    }
+    public String noCandidatesText {
+        get {
+            return RecruitingAppConstants.NO_CANDIDATES_TEXT;
+        }
     }
 
     public AssignCandidatesController(ApexPages.StandardController standardController) {
         this.vacancy = (Vacancy__c) standardController.getRecord();
+        selectedCandidates = new String[]{};
     }
 
     public PageReference assignCandidatesAction() {
         Integer selectedCandidatesSize = selectedCandidates.size();
+
         if (selectedCandidatesSize > 0) {
-            List<sObject> vca = new List<sObject>();
+            List<VacancyCandidateAssociation__c> vacancyCandidates = new List<VacancyCandidateAssociation__c>();
             for (String selectedCandidate : selectedCandidates) {
-                vca.add(new VacancyCandidateAssociation__c(Vacancy__c = vacancy.Id, Candidate__c = selectedCandidate));
+                vacancyCandidates.add(new VacancyCandidateAssociation__c(Vacancy__c = vacancy.Id, Candidate__c = selectedCandidate));
             }
-            insert vca;
+            insert vacancyCandidates;
         }
 
         // Redirect back to Vacancy page
@@ -26,29 +40,29 @@ public with sharing class AssignCandidatesController {
     }
 
     public List<SelectOption> getCandidates() {
-        List<SelectOption> options = new List<SelectOption>();
+        List<SelectOption> candidatesOptions = new List<SelectOption>();
         List<String> assignedCandidates = new List<String>();
 
         // Get already assigned candidates
-        for (VacancyCandidateAssociation__c vca : [
+        for (VacancyCandidateAssociation__c vacancyCandidates : [
                 SELECT Id, Candidate__r.Id
                 FROM VacancyCandidateAssociation__c
                 WHERE Vacancy__c = :vacancy.Id
         ]) {
-            assignedCandidates.add(vca.Candidate__r.Id);
+            assignedCandidates.add(vacancyCandidates.Candidate__r.Id);
         }
 
         String status = RecruitingAppConstants.VALIDATED_STATUS;
         // Get candidates with status validated by HR
-        for (Candidate__c can : [
+        for (Candidate__c candidate : [
                 SELECT Id, Full_Name__c
                 FROM Candidate__c
                 WHERE Status__c = :status
                 AND Id NOT IN :assignedCandidates
         ]) {
-            options.add(new SelectOption(can.Id, can.Full_Name__c));
+            candidatesOptions.add(new SelectOption(candidate.Id, candidate.Full_Name__c));
         }
 
-        return options;
+        return candidatesOptions;
     }
 }

@@ -1,62 +1,73 @@
 @isTest
 public class TestAssignCandidates {
-    static AssignCandidatesController assignCandidatesController;
-    static Vacancy__c[] vacancies;
-    static PageReference pref;
-    static Candidate__c[] candidates;
-    static List<String> selectedCandidates = new List<String>();
-
-    private static void init() {
+    @testSetup
+    static void setup() {
         String vacancyStatus = RecruitingAppConstants.INPROGRESS_STATUS;
         String candidateStatus = RecruitingAppConstants.VALIDATED_STATUS;
-        vacancies = TestDataFactory.createVacancies(1, vacancyStatus);
-        candidates = TestDataFactory.createCandidates(3, candidateStatus);
+        Vacancy__c[] vacancies = TestDataFactory.createVacancies(1, vacancyStatus);
+        Candidate__c[] candidates = TestDataFactory.createCandidates(3);
 
-        for (Candidate__C candidate : candidates) {
-            selectedCandidates.add(candidate.Id);
+        for (Candidate__c candidate : candidates) {
             candidate.Status__c = candidateStatus;
         }
 
         update candidates;
-
-        TestDataFactory.createVca(vacancies[0].Id, candidates[0].Id);
-
-        pref = new PageReference('/' + vacancies[0].Id);
-        pref.getParameters().put('id', vacancies[0].Id);
-        Test.setCurrentPage(pref);
-
-        ApexPages.StandardController stdCtr = new ApexPages.StandardController(vacancies[0]);
-        assignCandidatesController = new AssignCandidatesController(stdCtr);
-        assignCandidatesController.selectedCandidates = selectedCandidates;
     }
 
     @isTest
     private static void testGetCandidates() {
         List<SelectOption> options = new List<SelectOption>();
+        String candidateStatus = RecruitingAppConstants.VALIDATED_STATUS;
 
-        init();
-        Test.startTest();
+        Vacancy__c vacancy = [SELECT Title__c FROM Vacancy__c WHERE Title__c = 'TestVacancy0' LIMIT 1];
+        Candidate__c candidate = [SELECT FirstName__c FROM Candidate__c WHERE FirstName__c LIKE 'TestCandidate%' AND Status__c = :candidateStatus LIMIT 1];
+
+        TestDataFactory.createVca(vacancy.Id, candidate.Id);
+
+        PageReference pref = new PageReference('/' + vacancy.Id);
+        pref.getParameters().put('id', vacancy.Id);
+        Test.setCurrentPage(pref);
+
+        ApexPages.StandardController stdCtr = new ApexPages.StandardController(vacancy);
+        AssignCandidatesController assignCandidatesController = new AssignCandidatesController(stdCtr);
+
         options = assignCandidatesController.getCandidates();
         System.assertEquals(2, options.size());
-
-        Test.stopTest();
-
     }
 
     @isTest
     private static void TestAssignCandidates() {
-        init();
-        Test.startTest();
+        List<String> selectedCandidates = new List<String>();
+        String candidateStatus = RecruitingAppConstants.VALIDATED_STATUS;
+
+        Vacancy__c vacancy = [SELECT Title__c FROM Vacancy__c WHERE Title__c = 'TestVacancy0' LIMIT 1];
+        String vacancyId = vacancy.Id;
+
+        Candidate__c[] candidates = [SELECT FirstName__c FROM Candidate__c WHERE FirstName__c LIKE 'TestCandidate%' AND Status__c = :candidateStatus LIMIT 2];
+
+        for (Candidate__c candidate : candidates) {
+            selectedCandidates.add(candidate.Id);
+        }
+
+        PageReference pref = new PageReference('/' + vacancyId);
+        pref.getParameters().put('id', vacancyId);
+        Test.setCurrentPage(pref);
+
+        ApexPages.StandardController stdCtr = new ApexPages.StandardController(vacancy);
+        AssignCandidatesController assignCandidatesController = new AssignCandidatesController(stdCtr);
+        assignCandidatesController.selectedCandidates = selectedCandidates;
+
         assignCandidatesController.assignCandidatesAction();
 
-        String vacancyId = vacancies[0].Id;
-        VacancyCandidateAssociation__c[] vca = [
+        Test.startTest();
+        VacancyCandidateAssociation__c[] vacancyCandidates = [
                 SELECT Id
                 FROM VacancyCandidateAssociation__c
                 WHERE Vacancy__c = :vacancyId
                 AND Candidate__c IN :selectedCandidates
         ];
-        System.assertEquals(true, vca.size() > 0);
+
+        System.assertEquals(2, vacancyCandidates.size());
 
         Test.stopTest();
     }

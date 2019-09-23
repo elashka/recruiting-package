@@ -8,30 +8,29 @@ public class TestDataFactory {
                     Status__c = status);
             vacancies.add(vacancy);
         }
-        insert vacancies;
 
+        insert vacancies;
         return vacancies;
     }
 
-    public static List<Candidate__c> createCandidates(Integer numCandidates, String status) {
+    public static List<Candidate__c> createCandidates(Integer numCandidates) {
         List<Candidate__c> candidates = new List<Candidate__c>();
 
         for (Integer i = 0; i < numCandidates; i++) {
             Candidate__c candidate = new Candidate__c(FirstName__c = 'TestCandidate' + i,
                     LastName__c = 'LastName',
-                    Salary__c = 500,
-                    Status__c = status);
+                    Salary__c = 500);
             candidates.add(candidate);
         }
-        insert candidates;
 
+        insert candidates;
         return candidates;
     }
 
     public static VacancyCandidateAssociation__c createVca(String vacancyId, String candidateId) {
-        VacancyCandidateAssociation__c vca = new VacancyCandidateAssociation__c(Vacancy__c = vacancyId, Candidate__c = candidateId);
+        VacancyCandidateAssociation__c vacancyCandidates = new VacancyCandidateAssociation__c(Vacancy__c = vacancyId, Candidate__c = candidateId);
 
-        insert vca;
-        return vca;
+        insert vacancyCandidates;
+        return vacancyCandidates;
     }
 }
